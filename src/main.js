@@ -19,7 +19,6 @@ const trayElement = document.querySelector("#shape-tray");
 const scoreElement = document.querySelector("#current-score");
 const bestElement = document.querySelector("#best-score");
 const comboElement = document.querySelector("#combo-banner");
-const hintElement = document.querySelector("#game-hint");
 const gameOverElement = document.querySelector("#game-over");
 const finalScoreElement = document.querySelector("#final-score");
 const toastElement = document.querySelector("#toast");
@@ -124,9 +123,10 @@ function shapeMarkup(piece) {
   for (let row = 0; row < rows; row += 1) {
     for (let col = 0; col < cols; col += 1) {
       const key = `${row},${col}`;
-      miniCells.push(
-        `<span class="mini-cell"${occupied.has(key) ? ` style="--tile-color:${piece.color}"` : " style="visibility:hidden"`}></span>`,
-      );
+      const style = occupied.has(key)
+        ? ` style="--tile-color:${piece.color}"`
+        : ' style="visibility:hidden"';
+      miniCells.push(`<span class="mini-cell"${style}></span>`);
     }
   }
   return `<span class="shape-preview" style="--shape-rows:${rows};--shape-cols:${cols};--tile-color:${piece.color}">${miniCells.join("")}</span>`;
@@ -149,11 +149,6 @@ function render() {
   bestElement.textContent = String(state.best);
   gameOverElement.hidden = !state.isOver;
   finalScoreElement.textContent = String(state.score);
-  hintElement.textContent = state.isOver
-    ? "התחל משחק חדש כדי לנסות לשבור את השיא"
-    : state.selected === null
-      ? "בחר צורה ואז הקש על מקום פנוי בלוח"
-      : "עכשיו הקש על תא פנוי בלוח כדי להניח את הצורה";
   renderBoard();
   renderTray();
 }
@@ -282,9 +277,6 @@ function selectPiece(index) {
   if (state.isOver || !state.pieces[index]) return;
   state.selected = state.selected === index ? null : index;
   renderTray();
-  hintElement.textContent = state.selected === null
-    ? "בחר צורה ואז הקש על מקום פנוי בלוח"
-    : "עכשיו הקש על תא פנוי בלוח כדי להניח את הצורה";
 }
 
 function suppressPointerClick() {
@@ -378,7 +370,10 @@ comboInput.addEventListener("change", () => {
   showCombo();
 });
 
-document.querySelector("#new-game").addEventListener("click", startNewGame);
+document.querySelector("#new-game").addEventListener("click", () => {
+  startNewGame();
+  settingsDialog.close();
+});
 document.querySelector("#play-again").addEventListener("click", startNewGame);
 
 volumeInput.value = String(state.settings.volume);
